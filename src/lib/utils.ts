@@ -222,13 +222,14 @@ export function isEmpty(value: unknown): boolean {
 /**
  * Debounce a function
  */
-export function debounce<T extends (...args: unknown[]) => unknown>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout> | null = null
 
-  return function (this: unknown, ...args: Parameters<T>) {
+  return function (this: ThisParameterType<T>, ...args: Parameters<T>) {
     if (timeoutId) {
       clearTimeout(timeoutId)
     }
