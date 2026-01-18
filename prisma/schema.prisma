@@ -7,3 +7,607 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  ELITE
+}
+
+enum Position {
+  FORWARD
+  MIDFIELDER
+  BACK
+  GOALKEEPER
+  FLEXIBLE
+}
+
+enum SubscriptionTier {
+  FREE
+  PLAYER_PRO
+  CLUB_STARTER
+  CLUB_PRO
+  CLUB_ELITE
+}
+
+enum ClubRole {
+  MEMBER
+  COACH
+  EQUIPMENT_MANAGER
+  TREASURER
+  SESSION_COORDINATOR
+  ADMIN
+  OWNER
+}
+
+enum SessionType {
+  TRAINING
+  SCRIMMAGE
+  PICKUP
+  BEGINNER_INTRO
+  COMPETITION_PREP
+  SOCIAL
+}
+
+enum RsvpStatus {
+  YES
+  NO
+  MAYBE
+}
+
+enum EquipmentType {
+  STICK
+  GLOVE
+  MASK
+  SNORKEL
+  FINS
+  CAP
+  PUCK
+  GOAL
+}
+
+enum EquipmentCondition {
+  NEW
+  GOOD
+  FAIR
+  POOR
+}
+
+enum EquipmentSize {
+  XS
+  S
+  M
+  L
+  XL
+  XXL
+  JUNIOR
+  ADULT
+  ONE_SIZE
+}
+
+// ============================================================================
+// MODELS
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// 1. User - synced with Clerk
+// ----------------------------------------------------------------------------
+model User {
+  id                 String           @id @default(cuid())
+  clerkId            String           @unique
+  email              String           @unique
+  username           String?          @unique
+  firstName          String?
+  lastName           String?
+  imageUrl           String?
+  bio                String?
+  location           String?
+  country            String?
+  latitude           Float?
+  longitude          Float?
+  yearsPlaying       Int?
+  primaryPosition    Position?
+  skillLevel         SkillLevel       @default(BEGINNER)
+  isPublicProfile    Boolean          @default(true)
+  emailNotifications Boolean          @default(true)
+  pushNotifications  Boolean          @default(true)
+  subscriptionTier   SubscriptionTier @default(FREE)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  // Relations
+  clubMemberships    ClubMember[]
+  sessionRsvps       SessionRsvp[]
+  attendances        Attendance[]
+  equipmentCheckouts EquipmentCheckout[]
+  sentMessages       Message[]           @relation("SentMessages")
+  receivedMessages   Message[]           @relation("ReceivedMessages")
+  reviews            Review[]
+  badges             UserBadge[]
+  trainingLogs       TrainingLog[]
+  breathHoldRecords  BreathHoldRecord[]
+  notifications      Notification[]
+  favoriteClubs      FavoriteClub[]
+
+  @@index([clerkId])
+  @@index([email])
+  @@index([skillLevel])
+  @@index([latitude, longitude])
+}
+
+// ----------------------------------------------------------------------------
+// 2. Club - underwater hockey clubs
+// ----------------------------------------------------------------------------
+model Club {
+  id                String   @id @default(cuid())
+  name              String
+  slug              String   @unique
+  description       String?
+  foundedYear       Int?
+  imageUrl          String?
+  coverImageUrl     String?
+  website           String?
+  email             String?
+  phone             String?
+  facebookUrl       String?
+  instagramUrl      String?
+  twitterUrl        String?
+  governingBody     String?
+  isVerified        Boolean  @default(false)
+  isActive          Boolean  @default(true)
+  welcomesBeginners Boolean  @default(true)
+  languagesSpoken   String[] @default(["English"])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Location
+  country   String
+  city      String
+  address   String?
+  latitude  Float
+  longitude Float
+
+  // Relations
+  members       ClubMember[]
+  venues        Venue[]
+  sessions      Session[]
+  equipment     Equipment[]
+  announcements Announcement[]
+  reviews       Review[]
+  favoriteBy    FavoriteClub[]
+
+  @@index([slug])
+  @@index([country, city])
+  @@index([latitude, longitude])
+  @@index([isActive, isVerified])
+}
+
+// ----------------------------------------------------------------------------
+// 3. ClubMember - join table with role
+// ----------------------------------------------------------------------------
+model ClubMember {
+  id       String   @id @default(cuid())
+  userId   String
+  clubId   String
+  role     ClubRole @default(MEMBER)
+  joinedAt DateTime @default(now())
+  isActive Boolean  @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, clubId])
+  @@index([clubId])
+  @@index([userId])
+  @@index([role])
+}
+
+// ----------------------------------------------------------------------------
+// 4. Venue - pools and practice locations
+// ----------------------------------------------------------------------------
+model Venue {
+  id               String   @id @default(cuid())
+  clubId           String
+  name             String
+  address          String
+  city             String
+  country          String
+  latitude         Float
+  longitude        Float
+  poolLength       Float? // meters
+  poolWidth        Float? // meters
+  poolDepth        Float? // meters
+  waterTemp        Float? // celsius
+  hasAccessibility Boolean  @default(false)
+  notes            String?
+  imageUrl         String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  club     Club      @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  sessions Session[]
+
+  @@index([clubId])
+  @@index([latitude, longitude])
+}
+
+// ----------------------------------------------------------------------------
+// 5. Session - training sessions, scrimmages, etc.
+// ----------------------------------------------------------------------------
+model Session {
+  id            String      @id @default(cuid())
+  clubId        String
+  venueId       String?
+  title         String
+  description   String?
+  type          SessionType @default(TRAINING)
+  skillLevel    SkillLevel?
+  startTime     DateTime
+  endTime       DateTime
+  maxAttendees  Int?
+  isCancelled   Boolean     @default(false)
+  cancelReason  String?
+  isRecurring   Boolean     @default(false)
+  recurringRule String? // iCal RRULE format
+  createdById   String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  club        Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  venue       Venue?        @relation(fields: [venueId], references: [id])
+  rsvps       SessionRsvp[]
+  attendances Attendance[]
+
+  @@index([clubId])
+  @@index([venueId])
+  @@index([startTime])
+  @@index([type])
+  @@index([isCancelled])
+}
+
+// ----------------------------------------------------------------------------
+// 6. SessionRsvp - user RSVP to session
+// ----------------------------------------------------------------------------
+model SessionRsvp {
+  id        String     @id @default(cuid())
+  sessionId String
+  userId    String
+  status    RsvpStatus
+  note      String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([status])
+}
+
+// ----------------------------------------------------------------------------
+// 7. Attendance - check-in records
+// ----------------------------------------------------------------------------
+model Attendance {
+  id          String   @id @default(cuid())
+  sessionId   String
+  userId      String
+  checkedInAt DateTime @default(now())
+  checkedInBy String? // admin who checked them in
+  method      String? // QR, GPS, MANUAL
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+  @@index([sessionId])
+  @@index([userId])
+}
+
+// ----------------------------------------------------------------------------
+// 8. Equipment - club inventory
+// ----------------------------------------------------------------------------
+model Equipment {
+  id           String             @id @default(cuid())
+  clubId       String
+  type         EquipmentType
+  name         String
+  description  String?
+  size         EquipmentSize?
+  condition    EquipmentCondition @default(GOOD)
+  purchaseDate DateTime?
+  imageUrl     String?
+  serialNumber String?
+  isAvailable  Boolean            @default(true)
+  notes        String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  club      Club                @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  checkouts EquipmentCheckout[]
+
+  @@index([clubId])
+  @@index([type])
+  @@index([isAvailable])
+}
+
+// ----------------------------------------------------------------------------
+// 9. EquipmentCheckout - borrowing records
+// ----------------------------------------------------------------------------
+model EquipmentCheckout {
+  id           String              @id @default(cuid())
+  equipmentId  String
+  userId       String
+  checkedOutAt DateTime            @default(now())
+  dueDate      DateTime?
+  returnedAt   DateTime?
+  conditionOut EquipmentCondition
+  conditionIn  EquipmentCondition?
+  photoOutUrl  String?
+  photoInUrl   String?
+  notes        String?
+  approvedById String?
+
+  equipment Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([equipmentId])
+  @@index([userId])
+  @@index([returnedAt])
+}
+
+// ----------------------------------------------------------------------------
+// 10. Competition - tournaments calendar
+// ----------------------------------------------------------------------------
+model Competition {
+  id                   String       @id @default(cuid())
+  name                 String
+  description          String?
+  organizingBody       String?
+  startDate            DateTime
+  endDate              DateTime
+  registrationDeadline DateTime?
+  registrationUrl      String?
+  venue                String?
+  city                 String
+  country              String
+  latitude             Float?
+  longitude            Float?
+  skillLevels          SkillLevel[]
+  ageGroups            String[]
+  imageUrl             String?
+  websiteUrl           String?
+  isPublished          Boolean      @default(true)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  followers CompetitionFollower[]
+  results   CompetitionResult[]
+
+  @@index([startDate])
+  @@index([country, city])
+  @@index([isPublished])
+}
+
+// ----------------------------------------------------------------------------
+// 11. CompetitionFollower - users following competitions
+// ----------------------------------------------------------------------------
+model CompetitionFollower {
+  id            String   @id @default(cuid())
+  competitionId String
+  userId        String
+  createdAt     DateTime @default(now())
+
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+
+  @@unique([competitionId, userId])
+  @@index([competitionId])
+  @@index([userId])
+}
+
+// ----------------------------------------------------------------------------
+// 12. CompetitionResult - competition results
+// ----------------------------------------------------------------------------
+model CompetitionResult {
+  id            String   @id @default(cuid())
+  competitionId String
+  teamName      String
+  placement     Int // 1st, 2nd, 3rd, etc.
+  division      String? // e.g., "Open", "Women's", "Masters"
+  poolName      String? // e.g., "Pool A", "Pool B"
+  gamesWon      Int?
+  gamesLost     Int?
+  gamesTied     Int?
+  goalsFor      Int?
+  goalsAgainst  Int?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+
+  @@index([competitionId])
+  @@index([placement])
+}
+
+// ----------------------------------------------------------------------------
+// 13. TrainingLog - workout logging
+// ----------------------------------------------------------------------------
+model TrainingLog {
+  id           String   @id @default(cuid())
+  userId       String
+  date         DateTime @default(now())
+  type         String // APNEA_DRY, POOL_FITNESS, STICK_WORK, SCRIMMAGE, COMPETITION
+  durationMins Int
+  intensity    Int? // 1-10
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
+  @@index([type])
+}
+
+// ----------------------------------------------------------------------------
+// 14. BreathHoldRecord - apnea training records
+// ----------------------------------------------------------------------------
+model BreathHoldRecord {
+  id              String   @id @default(cuid())
+  userId          String
+  date            DateTime @default(now())
+  durationSeconds Int
+  type            String // STATIC, CO2_TABLE, O2_TABLE
+  tableRound      Int? // which round in table training
+  restSeconds     Int?
+  heartRateBefore Int?
+  heartRateAfter  Int?
+  difficulty      Int? // 1-10 perceived difficulty
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
+  @@index([type])
+}
+
+// ----------------------------------------------------------------------------
+// 15. Message - direct and club messaging
+// ----------------------------------------------------------------------------
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String? // null for club announcements
+  clubId     String? // for club messages
+  content    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  sender   User  @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User? @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([clubId])
+  @@index([createdAt])
+}
+
+// ----------------------------------------------------------------------------
+// 16. Review - club reviews
+// ----------------------------------------------------------------------------
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  clubId    String
+  rating    Int // 1-5
+  content   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, clubId])
+  @@index([clubId])
+  @@index([userId])
+  @@index([rating])
+}
+
+// ----------------------------------------------------------------------------
+// 17. Notification - user notifications
+// ----------------------------------------------------------------------------
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String // SESSION_REMINDER, RSVP_UPDATE, MESSAGE, etc.
+  title     String
+  body      String
+  linkUrl   String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// ----------------------------------------------------------------------------
+// 18. Badge - achievement definitions
+// ----------------------------------------------------------------------------
+model Badge {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String
+  imageUrl    String?
+  category    String // ATTENDANCE, COMMUNITY, PERFORMANCE
+  requirement String // JSON description of how to earn
+
+  users UserBadge[]
+
+  @@index([category])
+}
+
+// ----------------------------------------------------------------------------
+// 19. UserBadge - earned badges join table
+// ----------------------------------------------------------------------------
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+  @@index([badgeId])
+}
+
+// ----------------------------------------------------------------------------
+// 20. FavoriteClub - saved clubs
+// ----------------------------------------------------------------------------
+model FavoriteClub {
+  id        String   @id @default(cuid())
+  userId    String
+  clubId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, clubId])
+  @@index([userId])
+  @@index([clubId])
+}
+
+// ----------------------------------------------------------------------------
+// 21. Announcement - club announcements
+// ----------------------------------------------------------------------------
+model Announcement {
+  id          String   @id @default(cuid())
+  clubId      String
+  title       String
+  content     String
+  isPinned    Boolean  @default(false)
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([clubId])
+  @@index([isPinned])
+  @@index([createdAt])
+}
