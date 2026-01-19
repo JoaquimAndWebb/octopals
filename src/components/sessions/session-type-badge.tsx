@@ -17,12 +17,12 @@ const sessionTypeBadgeVariants = cva(
   {
     variants: {
       type: {
-        training: "border-transparent bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-        scrimmage: "border-transparent bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-        competition: "border-transparent bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-        social: "border-transparent bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-        workshop: "border-transparent bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-        other: "border-transparent bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
+        training: "border-transparent bg-ocean-200 text-ocean-900 dark:bg-ocean-800 dark:text-ocean-200",
+        scrimmage: "border-transparent bg-ocean-400 text-ocean-950 dark:bg-ocean-700 dark:text-ocean-100",
+        competition: "border-transparent bg-sunset-400 text-navy-950 dark:bg-sunset-600 dark:text-ocean-100",
+        social: "border-transparent bg-ocean-500 text-ocean-950 dark:bg-ocean-600 dark:text-ocean-100",
+        workshop: "border-transparent bg-gold-400 text-navy-950 dark:bg-gold-600 dark:text-ocean-100",
+        other: "border-transparent bg-ocean-300 text-ocean-900 dark:bg-ocean-900 dark:text-ocean-200",
       },
     },
     defaultVariants: {

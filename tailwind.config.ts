@@ -43,6 +43,35 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Ocean Blue Palette
+        ocean: {
+          950: "#03045e", // darkest navy
+          900: "#023e8a", // dark blue
+          800: "#0077b6", // medium blue
+          700: "#0096c7", // cyan blue
+          600: "#00b4d8", // bright cyan
+          500: "#48cae4", // light cyan
+          400: "#90e0ef", // very light cyan
+          300: "#ade8f4", // pale cyan
+          200: "#caf0f8", // lightest cyan
+          100: "#e8f8fc", // near white cyan
+        },
+        // Contrast Colors
+        gold: {
+          500: "#ffb703", // golden yellow
+          600: "#e5a503", // darker gold
+          400: "#ffc733", // lighter gold
+        },
+        sunset: {
+          500: "#fb8500", // orange
+          600: "#e27800", // darker orange
+          400: "#fc9a33", // lighter orange
+        },
+        navy: {
+          950: "#023047", // dark navy from contrast palette
+          900: "#034560",
+          800: "#045a7a",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
