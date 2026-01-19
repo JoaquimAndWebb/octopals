@@ -1,4 +1,5 @@
-import type { Metadata } from "next"
+"use client"
+
 import Link from "next/link"
 import { MapPin, Calendar, Trophy, Users, Dumbbell } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -8,11 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ProfileHeader } from "@/components/user/profile-header"
 import { ProfileBadges } from "@/components/user/profile-badges"
 import { APP_NAME, POSITION_LABELS, type SkillLevel, type Position } from "@/lib/constants"
-
-export const metadata: Metadata = {
-  title: `My Profile - ${APP_NAME}`,
-  description: "View and manage your OctoPals profile",
-}
 
 // Mock user data
 const mockUser = {
