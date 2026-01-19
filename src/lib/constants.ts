@@ -2,7 +2,7 @@
 
 export const APP_NAME = "OctoPals"
 export const APP_DESCRIPTION = "Underwater hockey community platform"
-export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://octopals.app"
+export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://octopals.vercel.app"
 
 // Default settings
 export const DEFAULT_RADIUS_KM = 50
