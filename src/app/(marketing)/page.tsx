@@ -4,6 +4,20 @@ import { MapPin, Calendar, TrendingUp, Users, Dumbbell, Trophy, ArrowRight, Chec
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { APP_NAME, APP_DESCRIPTION } from "@/lib/constants"
+import {
+  AnimatedWaves,
+  FloatingBubbles,
+  AnimatedHeroContent,
+  AnimatedTitle,
+  AnimatedDescription,
+  AnimatedButtons,
+  FadeInSection,
+  StaggerContainer,
+  StaggerItem,
+  AnimatedStat,
+  AnimatedStep,
+  PulsingStepNumber,
+} from "@/components/landing/animated-sections"
 
 export const metadata: Metadata = {
   title: `${APP_NAME} - Connect with the Global Underwater Hockey Community`,
@@ -70,18 +84,21 @@ export default function HomePage() {
         <div className="absolute -bottom-32 -left-32 h-64 w-64 rounded-full bg-blue-400/20 blur-3xl" />
         <div className="absolute -right-32 -top-32 h-64 w-64 rounded-full bg-blue-400/20 blur-3xl" />
 
+        {/* Floating bubbles for underwater effect */}
+        <FloatingBubbles />
+
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+          <AnimatedHeroContent>
+            <AnimatedTitle>
               Connect with the Global{" "}
               <span className="text-blue-200">Underwater Hockey</span>{" "}
               Community
-            </h1>
-            <p className="mt-6 text-lg text-blue-100 md:text-xl">
+            </AnimatedTitle>
+            <AnimatedDescription>
               Find clubs, join training sessions, track your progress, and connect with players worldwide.
               The ultimate platform for the underwater hockey community.
-            </p>
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            </AnimatedDescription>
+            <AnimatedButtons>
               <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
                 <Link href="/sign-up">
                   Get Started Free
@@ -93,101 +110,120 @@ export default function HomePage() {
                   Explore Clubs
                 </Link>
               </Button>
-            </div>
-          </div>
+            </AnimatedButtons>
+          </AnimatedHeroContent>
         </div>
+
+        {/* Animated waves at the bottom */}
+        <AnimatedWaves />
       </section>
 
       {/* Features Grid */}
       <section className="py-20 md:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
+          <FadeInSection className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
               Everything You Need to Dive Deeper
             </h2>
             <p className="mt-4 text-lg text-gray-600">
               {APP_NAME} provides all the tools you need to find clubs, manage sessions, and improve your game.
             </p>
-          </div>
+          </FadeInSection>
 
-          <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <StaggerContainer className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => {
               const Icon = feature.icon
               return (
-                <Card key={feature.title} className="border-gray-200 transition-shadow hover:shadow-lg">
-                  <CardHeader>
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
-                      <Icon className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <CardTitle className="mt-4">{feature.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-base">
-                      {feature.description}
-                    </CardDescription>
-                  </CardContent>
-                </Card>
+                <StaggerItem key={feature.title}>
+                  <Card className="border-gray-200 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                    <CardHeader>
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
+                        <Icon className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <CardTitle className="mt-4">{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-base">
+                        {feature.description}
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                </StaggerItem>
               )
             })}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
 
       {/* How It Works */}
       <section className="bg-gray-50 py-20 md:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
+          <FadeInSection className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
               How It Works
             </h2>
             <p className="mt-4 text-lg text-gray-600">
               Get started in minutes and join the underwater hockey community.
             </p>
-          </div>
+          </FadeInSection>
 
           <div className="mt-16 grid gap-8 md:grid-cols-3">
             {howItWorks.map((item) => (
-              <div key={item.step} className="relative text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white">
-                  {item.step}
-                </div>
+              <AnimatedStep key={item.step} step={item.step}>
+                <PulsingStepNumber step={item.step} />
                 <h3 className="mt-6 text-xl font-semibold text-gray-900">
                   {item.title}
                 </h3>
                 <p className="mt-3 text-gray-600">
                   {item.description}
                 </p>
-              </div>
+              </AnimatedStep>
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="bg-blue-600 py-16 md:py-20">
+      <section className="relative overflow-hidden bg-blue-600 py-16 md:py-20">
+        {/* Subtle wave at top */}
+        <div className="absolute top-0 left-0 right-0 rotate-180">
+          <svg
+            className="relative block w-full h-[40px]"
+            viewBox="0 0 1200 120"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M0,60 C200,90 400,30 600,60 C800,90 1000,30 1200,60 L1200,120 L0,120 Z"
+              fill="rgba(255,255,255,0.05)"
+            />
+          </svg>
+        </div>
+
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
-            <div className="text-center md:text-left">
-              <h2 className="text-3xl font-bold text-white sm:text-4xl">
-                Ready to Dive In?
-              </h2>
-              <p className="mt-3 text-lg text-blue-100">
-                Join thousands of players already using {APP_NAME}.
-              </p>
+          <FadeInSection>
+            <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
+              <div className="text-center md:text-left">
+                <h2 className="text-3xl font-bold text-white sm:text-4xl">
+                  Ready to Dive In?
+                </h2>
+                <p className="mt-3 text-lg text-blue-100">
+                  Join thousands of players already using {APP_NAME}.
+                </p>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
+                  <Link href="/sign-up">
+                    Create Free Account
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="border-white/30 bg-white/10 text-white hover:bg-white/20">
+                  <Link href="/pricing">
+                    View Pricing
+                  </Link>
+                </Button>
+              </div>
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
-                <Link href="/sign-up">
-                  Create Free Account
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="border-white/30 bg-white/10 text-white hover:bg-white/20">
-                <Link href="/pricing">
-                  View Pricing
-                </Link>
-              </Button>
-            </div>
-          </div>
+          </FadeInSection>
         </div>
       </section>
 
@@ -195,22 +231,22 @@ export default function HomePage() {
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 text-center text-gray-600">
-            <div className="flex items-center gap-2">
+            <AnimatedStat>
               <CheckCircle className="h-5 w-5 text-green-500" />
               <span>500+ Clubs Worldwide</span>
-            </div>
-            <div className="flex items-center gap-2">
+            </AnimatedStat>
+            <AnimatedStat>
               <CheckCircle className="h-5 w-5 text-green-500" />
               <span>10,000+ Active Players</span>
-            </div>
-            <div className="flex items-center gap-2">
+            </AnimatedStat>
+            <AnimatedStat>
               <CheckCircle className="h-5 w-5 text-green-500" />
               <span>50+ Countries</span>
-            </div>
-            <div className="flex items-center gap-2">
+            </AnimatedStat>
+            <AnimatedStat>
               <CheckCircle className="h-5 w-5 text-green-500" />
               <span>Free to Get Started</span>
-            </div>
+            </AnimatedStat>
           </div>
         </div>
       </section>
