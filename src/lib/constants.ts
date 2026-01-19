@@ -72,12 +72,12 @@ export const SESSION_TYPE_LABELS: Record<keyof typeof SESSION_TYPES, string> = {
 }
 
 export const SESSION_TYPE_COLORS: Record<keyof typeof SESSION_TYPES, string> = {
-  TRAINING: "bg-blue-100 text-blue-800",
-  SCRIMMAGE: "bg-green-100 text-green-800",
-  PICKUP: "bg-yellow-100 text-yellow-800",
-  BEGINNER_INTRO: "bg-purple-100 text-purple-800",
-  COMPETITION_PREP: "bg-red-100 text-red-800",
-  SOCIAL: "bg-pink-100 text-pink-800",
+  TRAINING: "bg-ocean-200 text-ocean-900 dark:bg-ocean-800 dark:text-ocean-200",
+  SCRIMMAGE: "bg-ocean-400 text-ocean-950 dark:bg-ocean-700 dark:text-ocean-100",
+  PICKUP: "bg-gold-400 text-navy-950 dark:bg-gold-600 dark:text-ocean-100",
+  BEGINNER_INTRO: "bg-ocean-300 text-ocean-900 dark:bg-ocean-700 dark:text-ocean-200",
+  COMPETITION_PREP: "bg-sunset-400 text-navy-950 dark:bg-sunset-600 dark:text-ocean-100",
+  SOCIAL: "bg-ocean-500 text-ocean-950 dark:bg-ocean-600 dark:text-ocean-100",
 }
 
 export type SessionType = keyof typeof SESSION_TYPES
@@ -138,10 +138,10 @@ export const EQUIPMENT_CONDITION_LABELS: Record<keyof typeof EQUIPMENT_CONDITION
 }
 
 export const EQUIPMENT_CONDITION_COLORS: Record<keyof typeof EQUIPMENT_CONDITIONS, string> = {
-  NEW: "bg-green-100 text-green-800",
-  GOOD: "bg-blue-100 text-blue-800",
-  FAIR: "bg-yellow-100 text-yellow-800",
-  POOR: "bg-red-100 text-red-800",
+  NEW: "bg-ocean-300 text-ocean-900 dark:bg-ocean-700 dark:text-ocean-100",
+  GOOD: "bg-ocean-400 text-ocean-950 dark:bg-ocean-600 dark:text-ocean-100",
+  FAIR: "bg-gold-400 text-navy-950 dark:bg-gold-600 dark:text-ocean-100",
+  POOR: "bg-sunset-400 text-navy-950 dark:bg-sunset-600 dark:text-ocean-100",
 }
 
 export type EquipmentCondition = keyof typeof EQUIPMENT_CONDITIONS
