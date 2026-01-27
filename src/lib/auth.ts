@@ -1,10 +1,39 @@
-import { auth, currentUser } from '@clerk/nextjs/server'
+import { auth, currentUser, clerkClient } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { ClubRole } from '@prisma/client'
 
 /**
+ * Sync user from Clerk to database
+ * Creates the user if they don't exist, updates if they do
+ */
+async function syncUserFromClerk(clerkId: string) {
+  const clerk = await clerkClient()
+  const clerkUser = await clerk.users.getUser(clerkId)
+
+  return prisma.user.upsert({
+    where: { clerkId },
+    update: {
+      email: clerkUser.emailAddresses[0]?.emailAddress ?? '',
+      username: clerkUser.username,
+      firstName: clerkUser.firstName,
+      lastName: clerkUser.lastName,
+      imageUrl: clerkUser.imageUrl,
+    },
+    create: {
+      clerkId,
+      email: clerkUser.emailAddresses[0]?.emailAddress ?? '',
+      username: clerkUser.username,
+      firstName: clerkUser.firstName,
+      lastName: clerkUser.lastName,
+      imageUrl: clerkUser.imageUrl,
+    },
+  })
+}
+
+/**
  * Get the current user from Clerk and database
  * Returns both Clerk user data and database user record
+ * Syncs user from Clerk to database if not found
  */
 export async function getCurrentUser() {
   const clerkUser = await currentUser()
@@ -13,9 +42,13 @@ export async function getCurrentUser() {
     return null
   }
 
-  const dbUser = await prisma.user.findUnique({
+  let dbUser = await prisma.user.findUnique({
     where: { clerkId: clerkUser.id },
   })
+
+  if (!dbUser) {
+    dbUser = await syncUserFromClerk(clerkUser.id)
+  }
 
   return {
     clerk: clerkUser,
@@ -26,6 +59,7 @@ export async function getCurrentUser() {
 /**
  * Require authentication - throws if not authenticated
  * Returns the current user if authenticated
+ * Syncs user from Clerk to database if not found
  */
 export async function requireAuth() {
   const { userId } = await auth()
@@ -34,12 +68,12 @@ export async function requireAuth() {
     throw new Error('Unauthorized')
   }
 
-  const user = await prisma.user.findUnique({
+  let user = await prisma.user.findUnique({
     where: { clerkId: userId },
   })
 
   if (!user) {
-    throw new Error('User not found in database')
+    user = await syncUserFromClerk(userId)
   }
 
   return user
